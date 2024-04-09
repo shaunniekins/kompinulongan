@@ -25,3 +25,10 @@ This repository contains a simple interpreter for the Kompinulongan language, wr
 ## Example
 
 Here's an example of a Kompinulongan program:
+PRINTA(Hello, World!)
+DUGANG(5, 3)
+KUHAAN(10, 2)
+PILOPILOON(4, 6)
+BAHIN(8, 2)
+BAHIN(2, 0)
+SALIN(9, 4)
