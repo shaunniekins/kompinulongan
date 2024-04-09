@@ -6,26 +6,34 @@ import re
 # BAHIN corresponds to 'DIVISION'
 # SALIN corresponds to 'MODULUS'
 
-OPERATIONS = r'(DUGANG|KUHAAN|PILOPILOON|BAHIN|SALIN)\((\d+), (\d+)\)'
+OPERATIONS = r'(DUGANG|KUHAAN|PILOPILOON|BAHIN|SALIN)\(([\d, ]+)\)'
 PRINT = r'PRINTA\((.*?)\)'
 
 def perform_arithmetic(expression):
     match = re.search(OPERATIONS, expression)
     if match:
         operator = match.group(1)
-        a = int(match.group(2))
-        b = int(match.group(3))
+        numbers = list(map(int, match.group(2).split(',')))
         try:
             if operator == 'DUGANG':
-                return a + b
+                return sum(numbers)
             elif operator == 'KUHAAN':
-                return a - b
+                return numbers[0] - sum(numbers[1:])
             elif operator == 'PILOPILOON':
-                return a * b
+                result = 1
+                for number in numbers:
+                    result *= number
+                return result
             elif operator == 'BAHIN':
-                return a / b
+                result = numbers[0]
+                for number in numbers[1:]:
+                    result /= number
+                return result
             elif operator == 'SALIN':
-                return a % b
+                result = numbers[0]
+                for number in numbers[1:]:
+                    result %= number
+                return result
         except ZeroDivisionError:
             raise ValueError("Division or modulus by zero is not allowed")
     else:
