@@ -1,63 +1,60 @@
-class MiniLanguage:
-    def __init__(self):
-        self.variables = {}
+import re
 
-    def execute(self, code):
-        lines = code.split('\n')
-        for line in lines:
-            parts = line.strip().split()
-            if not parts:
-                continue
-            command = parts[0]
-            if command == 'print':
-                self.print_expression(' '.join(parts[1:]))
-            elif command == 'read':
-                self.read_file(parts[1])
-            else:
-                self.perform_operation(parts)
+# DUGANG corresponds to 'ADDITION'
+# KUHAAN corresponds to 'SUBTRACTION'
+# PILOPILOON corresponds to 'MULTIPLICATION'
+# BAHIN corresponds to 'DIVISION'
+# SALIN corresponds to 'MODULUS'
 
-    def print_expression(self, expression):
+OPERATIONS = r'(DUGANG|KUHAAN|PILOPILOON|BAHIN|SALIN)\((\d+), (\d+)\)'
+PRINT = r'PRINTA\((.*?)\)'
+
+def perform_arithmetic(expression):
+    """Evaluate a Kompinulongan expression"""
+    match = re.search(OPERATIONS, expression)
+    if match:
+        operator = match.group(1)
+        a = int(match.group(2))
+        b = int(match.group(3))
         try:
-            value = eval(expression, self.variables)
-            print(value)
-        except (NameError, SyntaxError, TypeError):
-            print(expression)
+            if operator == 'DUGANG':
+                return a + b
+            elif operator == 'KUHAAN':
+                return a - b
+            elif operator == 'PILOPILOON':
+                return a * b
+            elif operator == 'BAHIN':
+                return a / b
+            elif operator == 'SALIN':
+                return a % b
+        except ZeroDivisionError:
+            raise ValueError("Division or modulus by zero is not allowed")
+    else:
+        raise ValueError("Invalid expression")
 
-    def read_file(self, filename):
-        try:
-            with open(filename, 'r') as file:
-                for line in file:
-                    self.execute(line.strip())
-        except FileNotFoundError:
-            print(f"Error: File {filename} not found.")
+def handle_print_operation(expression):
+    """Print the value of a Kompinulongan print statement to the console"""
+    match = re.search(PRINT, expression)
+    if match:
+        print(match.group(1))  # Change this to the correct group number
+    else:
+        raise ValueError("Invalid print statement")
 
-    def perform_operation(self, parts):
-        if len(parts) != 4:
-            print("Error: Invalid syntax.")
-            return
+def execute_program(code):
+    """Interpret a Kompinulongan program"""
+    lines = code.split('\n')
+    for line in lines:
+        line = line.strip()
+        if line.startswith('PRINTA('):
+            handle_print_operation(line)
+        elif re.search(OPERATIONS, line):  # Only evaluate lines that contain operations
+            try:
+                result = perform_arithmetic(line)
+                print(result)
+            except ValueError as e:  # Catch the ValueError raised by perform_arithmetic
+                print(f"Error: {e}")
 
-        var = parts[1]
-        operator = parts[2]
-        value = parts[3]
+with open('data.txt', 'r') as file:
+    program = file.read()
 
-        try:
-            if operator == '+':
-                self.variables[var] = self.get_value(var) + self.get_value(value)
-            elif operator == '-':
-                self.variables[var] = self.get_value(var) - self.get_value(value)
-            elif operator == '*':
-                self.variables[var] = self.get_value(var) * self.get_value(value)
-            elif operator == '/':
-                self.variables[var] = self.get_value(var) / self.get_value(value)
-            elif operator == '%':
-                self.variables[var] = self.get_value(var) % self.get_value(value)
-            else:
-                print("Error: Invalid operator.")
-        except (ValueError, ZeroDivisionError):
-            print("Error: Invalid operand.")
-
-    def get_value(self, value):
-        if value in self.variables:
-            return self.variables[value]
-        else:
-            return float(value)
+execute_program(program)
